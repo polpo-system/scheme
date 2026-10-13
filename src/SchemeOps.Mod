@@ -12,7 +12,7 @@ MODULE SchemeOps; (** portable *) (* eos  *)
   *)
 
   IMPORT
-    Files, Objects, Strings, Texts, Gadgets, Scheme;
+    Files, Objects, Strings, Texts, Oberon, Scheme;
 
 
   TYPE
@@ -926,12 +926,22 @@ MODULE SchemeOps; (** portable *) (* eos  *)
 
   (*--- References ---*)
 
+  (* polpo: Gadgets.CreateObject without the aliases of Gadgets: call the generator procedure *)
+  PROCEDURE CreateObject (genproc: ARRAY OF CHAR): Objects.Object;
+    VAR res: INTEGER;
+  BEGIN
+    Objects.NewObj := NIL;
+    Oberon.Call(genproc, Oberon.Par, FALSE, res);
+    IF res # 0 THEN RETURN NIL END;
+    RETURN Objects.NewObj
+  END CreateObject;
+
   PROCEDURE New (c: Context; args: Object; VAR res: Object);
     VAR str: Object; s: ARRAY 64 OF CHAR;
   BEGIN
     str := StringArg(c, args); CheckNull(c, args);
     Scheme.GetString(str, 0, Scheme.StringLen(str), s);
-    res := Scheme.NewRef(Gadgets.CreateObject(s))
+    res := Scheme.NewRef(CreateObject(s))
   END New;
 
   PROCEDURE LibObj (c: Context; args: Object; VAR res: Object);
