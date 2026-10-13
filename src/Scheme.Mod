@@ -1,6 +1,9 @@
 (* ETH Oberon, Copyright 1990-2003 Computer Systems Institute, ETH Zurich, CH-8092 Zurich.
 Refer to the license.txt file provided with this distribution. *)
-
+(*
+  peter matthias
+  2015-05-08  changes to compile on ARM
+*)
 MODULE Scheme; (** portable *)  (* eos  *)
 
   (**
@@ -76,20 +79,23 @@ MODULE Scheme; (** portable *)  (* eos  *)
       buf: Buffer;
     END;
 
-    Symbol = POINTER TO RECORD (ObjDesc)
+    Symbol = POINTER TO SymbolDesc;
+    SymbolDesc= RECORD (ObjDesc)
       stretch: Stretch;
       hash: LONGINT;
       link: Symbol;
     END;
 
-    Binding = POINTER TO RECORD
+    Binding = POINTER TO BindingDesc;
+    BindingDesc = RECORD
       next: Binding;
       sym: Symbol;
       value: Object;
     END;
 
     (** environments for binding symbols to values **)
-    Environment* = POINTER TO RECORD
+    Environment* = POINTER TO EnvironmentDesc;
+    EnvironmentDesc= RECORD
       outer: Environment;
       chain: ARRAY envSize OF Binding
     END;
@@ -966,7 +972,7 @@ MODULE Scheme; (** portable *)  (* eos  *)
   (**--- Symbols ---**)
 
   PROCEDURE HashCode (VAR s: ARRAY OF CHAR): LONGINT;
-    CONST a0 = 31415; b = 27183; m = ASH(1, 16) - 15;
+    CONST a0 = 31415; b = 27183; m = 10000H - 15;
     VAR n, a, h: LONGINT;
   BEGIN
     (* taken from Sedgewick; a * m < MAX(LONGINT); no overflow checks (a*b!) *)
