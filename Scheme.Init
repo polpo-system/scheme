@@ -374,9 +374,9 @@
 ;
 
 (define call-with-input-file (lambda (string proc)
-  (apply proc (open-input-file string))))
+  (proc (open-input-file string))))
 (define call-with-output-file (lambda (string proc)
-  (apply proc (open-output-file string))))
+  (proc (open-output-file string))))
 
 (define display (lambda (obj . args)
   (define write-string (lambda (str i . args)
