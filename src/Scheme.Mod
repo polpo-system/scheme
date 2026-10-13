@@ -1344,6 +1344,23 @@ MODULE Scheme; (** portable *)  (* eos  *)
   END NewTextOutput;
 
 
+  (* polpo: a real as Strings.RealToFixStr writes it, without the leading blanks and the trailing
+     zeros of the fraction (3.5, not "          3.5000000000") *)
+  PROCEDURE RealToStr (x: LONGREAL; VAR s: ARRAY OF CHAR);
+    VAR i, j, n: LONGINT;
+  BEGIN
+    Strings.RealToFixStr(x, s, 20, 10, 0);
+    i := 0; WHILE s[i] = " " DO INC(i) END;
+    j := 0; WHILE s[i] # 0X DO s[j] := s[i]; INC(i); INC(j) END;
+    s[j] := 0X; n := j;
+    i := 0; WHILE (i < n) & (s[i] # ".") DO INC(i) END;
+    IF i < n THEN  (* a fraction: keep one digit at least *)
+      WHILE (n > i + 2) & (s[n-1] = "0") DO DEC(n) END;
+      s[n] := 0X
+    END
+  END RealToStr;
+
+
   PROCEDURE WriteObj* (out, obj: Object);
     VAR op: Output; c: CHAR; n, len, l, m: LONGINT; s: ARRAY 100 OF CHAR;
 
@@ -1395,7 +1412,7 @@ MODULE Scheme; (** portable *)  (* eos  *)
         Strings.IntToStr(obj(Rational).num, s); str(s); ch('/');
         Strings.IntToStr(obj(Rational).denom, s); str(s)
       ELSE
-        Strings.RealToFixStr(obj(Flonum).real, s, 20, 10, 0); str(s)
+        RealToStr(obj(Flonum).real, s); str(s)
       END
     | reference:
       str("##reference")
@@ -2565,7 +2582,7 @@ MODULE Scheme; (** portable *)  (* eos  *)
       int(obj(Rational).denom); buf[i] := 0X
     ELSE
       (* replace this by better algo *)
-      Strings.RealToFixStr(obj(Flonum).real, buf, 20, 10, 0)
+      RealToStr(obj(Flonum).real, buf)
     END;
     RETURN NewLiteral(buf, pool)
   END NumberToString;
